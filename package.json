@@ -1,0 +1,22 @@
+{
+  "name": "edu-chain-testnet-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "web3": "^1.10.4",
+    "axios": "^1.7.8",
+    "colors": "^1.4.0",
+    "https-proxy-agent": "^7.0.5",
+    "inquirer": "^8.2.6",
+    "socks-proxy-agent": "^8.0.5",
+    "readline-sync": "^1.4.10",
+    "dotenv": "^16.4.7"
+  }
+}
