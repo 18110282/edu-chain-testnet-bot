@@ -8,11 +8,12 @@ const readline = require("readline");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { SocksProxyAgent } = require("socks-proxy-agent");
 
+const INFO_WALLETS_PATH = "./info-wallets.txt";
+const WALLET_LIST = readWalletFile(INFO_WALLETS_PATH);
+
+
 const RPC_URL = process.env.RPC_URL;
 const ROUTER_GAINZSWAP_ADDRESS = process.env.ROUTER_GAINZSWAP_ADDRESS;
-
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const MY_ADDRESS = process.env.WALLET_ADDRESS;
 
 const USDT_ADDRESS = process.env.USDT_ADDRESS;
 const GAINZ_ADDRESS = process.env.GAINZ_ADDRESS;
@@ -76,6 +77,9 @@ const SWAP_ABI = [
 const web3 = new Web3(RPC_URL);
 const swapRouter = new web3.eth.Contract(SWAP_ABI, ROUTER_GAINZSWAP_ADDRESS);
 
+let PRIVATE_KEY = "";
+let MY_ADDRESS = "";
+
 
 async function swapTokens(pairIndex, amountSwap, numTxns) {
   const selectedPair = TOKEN_PAIRS[pairIndex];
@@ -84,11 +88,13 @@ async function swapTokens(pairIndex, amountSwap, numTxns) {
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
   const amountIn = web3.utils.toWei(amountSwap.toString(), "ether");
   const amountOutMin = "0";
-
   
   for (let i = 0; i < path.length; i++) {
     if (i < path.length - 1) {
-      await approveToken(USDT_ADDRESS);
+      const rs = await approveToken(USDT_ADDRESS);
+      if (!rs) {
+        return;
+      }        
       console.log(colors.yellow(`Da check allowance cua ${path[i]}`));
     }
   }
@@ -182,8 +188,10 @@ async function approveToken(address) {
         )
       );
     }
+    return true;
   } catch (error) {
     console.error(colors.red("Approve fail, reason is: ", error.message));
+    return false;
   }
 }
 
@@ -237,30 +245,51 @@ async function swapTokensMenu() {
     `Nhap so luong ${TOKEN_PAIRS[selectedPairIndex].name.split(" -> ")[0]} muon swap: `
   ));
 
-  await swapTokens(selectedPairIndex, amountSwap, numTxns);
+  for (let i = 0; i < WALLET_LIST.length; i++) {
+    const wallet = WALLET_LIST[i];
+    PRIVATE_KEY = wallet.privateKey;
+    MY_ADDRESS = wallet.walletAddress;
+    await swapTokens(selectedPairIndex, amountSwap, numTxns);
+  }
 }
 
 // Main Display
-async function main() {
+async function main() { 
   while (true) {
     const functionNumber = displayHeader();
-    switch (functionNumber) {
-      case 1:
-        await swapTokensMenu();
-        console.log(colors.grey("________________________"));
+      switch (functionNumber) {
+        case 1:
+          await swapTokensMenu();
+          console.log(colors.grey("________________________"));
+          break;
+        case 2:
+          console.log(colors.grey("Chua phat trien"));
+          console.log(colors.grey("________________________"));
+          break;
+        case 3:
+          console.log(colors.grey("Exited!"));
+          break;
+      }
+      if (functionNumber === 3) {
         break;
-      case 2:
-        console.log(colors.grey("Chua phat trien"));
-        console.log(colors.grey("________________________"));
-        break;
-      case 3:
-        console.log(colors.grey("Exited!"));
-        break;
+      }
     }
-    if (functionNumber === 3) {
-      break;
-    }
-  }
 }
+
+function readWalletFile(filePath) {
+  const fileContent = fs.readFileSync(filePath, 'utf8');
+
+  const wallets = fileContent
+    .replace(/\r/g, '') 
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .map(line => {
+      const [privateKey, walletAddress] = line.split('-').map(part => part.trim());
+      return { privateKey, walletAddress };
+    });
+
+  return wallets;
+}
+
 
 main();
