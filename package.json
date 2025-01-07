@@ -17,6 +17,7 @@
     "inquirer": "^8.2.6",
     "socks-proxy-agent": "^8.0.5",
     "readline-sync": "^1.4.10",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "puppeteer": "^23.11.1"
   }
 }
