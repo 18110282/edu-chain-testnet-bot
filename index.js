@@ -139,6 +139,7 @@ async function swapTokens(pairIndex, amountSwap, numTxns) {
 
   for (let i = 1; i <= numTxns; i++) {
     try {
+      await waitRandom();
       console.log(`Giao dich ${i}/${numTxns}:`);
       const tx = swapRouter.methods.swapExactTokensForTokens(
         amountIn,
@@ -190,6 +191,7 @@ async function supplyToken(tokenAddress, amount, onBehalfOf, referralCode = 0, n
 
   for (let i = 1; i <= numTxns; i++) {
     try {
+      await waitRandom();
       console.log(`Giao dich ${i}/${numTxns}:`);
       const tx = blendContract.methods.supply(
         tokenAddress,
@@ -416,6 +418,11 @@ function readWalletFile(filePath) {
     });
 
   return wallets;
+}
+
+function waitRandom() {
+  const delay = Math.random() * (5000 - 3000) + 3000;
+  return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 main();
